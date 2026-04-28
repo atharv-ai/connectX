@@ -8,6 +8,9 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
 
+const chatRout = require("./src/routes/chatRout");
+app.use("/api/chat",chatRout);
+
 const authantic = require("./src/routes/authRout");
 app.use('/api/auth',authantic);
 
