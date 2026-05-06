@@ -48,4 +48,30 @@ const getMessages = async (req, res) => {
     }
 };
 
-module.exports = { sendMessage, getMessages };
+const markMessagesAsSeen = async (req, res) => {
+    try {
+        const otherUserId = req.params.userId;
+        const myId = req.userID;
+
+        await Message.updateMany(
+            {
+                sender: otherUserId,
+                receiver: myId,
+                seen: false
+            },
+            {
+                seen: true,
+                seenAt: new Date()
+            }
+        );
+
+        res.status(200).json({
+            message: "Messages marked as seen"
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { sendMessage, getMessages, markMessagesAsSeen };

@@ -15,6 +15,14 @@ const messageSchema = new mongoose.Schema(
     message: {
       type: String,
       required: true
+    },
+    seen: {
+    type: Boolean,
+    default: false
+    },
+    seenAt: {
+        type: Date,
+        default: null
     }
   },
   {
