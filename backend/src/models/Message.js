@@ -17,12 +17,12 @@ const messageSchema = new mongoose.Schema(
       required: true
     },
     seen: {
-    type: Boolean,
-    default: false
+      type: Boolean,
+      default: false
     },
     seenAt: {
-        type: Date,
-        default: null
+      type: Date,
+      default: null
     }
   },
   {

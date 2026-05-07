@@ -24,4 +24,18 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('User',userSchema);
+const User = mongoose.model("User", userSchema);
+
+function syncUserIndexes() {
+    return User.syncIndexes().catch((err) => {
+        console.error("[User] Index sync failed:", err.message);
+    });
+}
+
+if (mongoose.connection.readyState === 1) {
+    syncUserIndexes();
+} else {
+    mongoose.connection.once("connected", syncUserIndexes);
+}
+
+module.exports = User;
