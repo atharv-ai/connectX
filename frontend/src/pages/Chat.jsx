@@ -2,6 +2,17 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import API from "../services/api";
 import { ThemeToggle } from "../components/ThemeToggle";
 
+function websocketUrl() {
+  const raw = import.meta.env.VITE_WS_URL;
+  if (typeof raw === "string" && raw.trim()) {
+    return raw.trim().replace(/\/+$/, "");
+  }
+  if (import.meta.env.DEV) {
+    return "ws://localhost:3000";
+  }
+  return "";
+}
+
 function readStoredUser() {
   try {
     const token = localStorage.getItem("token");
@@ -152,7 +163,15 @@ function Chat({ setPage }) {
       return;
     }
 
-    const ws = new WebSocket("ws://localhost:3000");
+    const wsUrl = websocketUrl();
+    if (!wsUrl) {
+      console.error(
+        "[ConnectX] VITE_WS_URL is not set. Configure it in Vercel (or .env) for production."
+      );
+      return;
+    }
+
+    const ws = new WebSocket(wsUrl);
     socketRef.current = ws;
 
     ws.onopen = () => {

@@ -11,11 +11,44 @@ const jwt = require("jsonwebtoken");
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
+if (!MONGO_URI) {
+    console.error("MONGO_URI is required. Set it in your environment (e.g. MongoDB Atlas connection string).");
+    process.exit(1);
+}
+
+function buildAllowedOrigins() {
+    const set = new Set([
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]);
+    const raw = process.env.FRONTEND_URL;
+    if (raw) {
+        raw.split(",").forEach((part) => {
+            const o = part.trim().replace(/\/$/, "");
+            if (o) {
+                set.add(o);
+            }
+        });
+    }
+    return Array.from(set);
+}
+
+const allowedOrigins = buildAllowedOrigins();
+
 const server = http.createServer(app);
 const wss = new WebSocketServer({server});
 
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin(origin, callback) {
+        if (!origin) {
+            return callback(null, true);
+        }
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        console.warn(`[CORS] Blocked origin: ${origin}`);
+        return callback(null, false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "token"],
@@ -173,11 +206,12 @@ app.get("/", function (req, res) {
 mongoose.connect(MONGO_URI)
     .then(() => {
         console.log("MongoDB connected.");
-        server.listen(PORT, () => {
+        server.listen(PORT, "0.0.0.0", () => {
             console.log(`HTTP and WebSocket server listening on port ${PORT}.`);
         });
     })
     .catch((err) => {
         console.error("MongoDB connection failed:", err.message);
+        process.exit(1);
     });
 
